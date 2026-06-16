@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedLab · Plataforma Literaria</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0b09;--ink2:#1a1613;--ink3:#252018;
+  --paper:#f4efe6;--paper2:#ece5d5;--paper3:#e0d8c6;
+  --line:rgba(13,11,9,.11);--line2:rgba(13,11,9,.2);
+  --red:#bf3728;--red2:#d94335;--red-pale:#faeae8;
+  --gold:#b07d0e;--gold-pale:#fdf4d2;
+  --teal:#1a6854;--teal-pale:#e0f0eb;
+  --purple:#5c3d7c;--purple-pale:#ede5f8;
+  --blue:#2558a8;--blue-pale:#e4ecf8;
+  --text:#18140f;--text2:#574e43;--text3:#968a7a;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --display:'Bebas Neue',Impact,sans-serif;
+  --mono:'IBM Plex Mono','Courier New',monospace;
+  --sans:'Barlow',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes stampDrop{from{opacity:0;transform:scale(1.5) rotate(-5deg)}to{opacity:1;transform:scale(1) rotate(-4deg)}}
+.au{opacity:0;animation:fadeUp .6s ease forwards;}
+.d1{animation-delay:.08s}.d2{animation-delay:.17s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}.d5{animation-delay:.55s}
+
+/* ── NOMBRE MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,11,9,.72);z-index:5000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--paper);max-width:440px;width:90%;padding:48px 40px;border-top:4px solid var(--red);position:relative;animation:pop .3s ease;}
+.modal-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:14px;}
+.modal-title{font-family:var(--display);font-size:44px;letter-spacing:1px;line-height:1;margin-bottom:8px;}
+.modal-sub{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px;}
+.modal-input{width:100%;padding:12px 16px;font-family:var(--sans);font-size:15px;border:1px solid var(--line2);border-top:3px solid var(--red);background:var(--paper2);color:var(--text);outline:none;margin-bottom:20px;}
+.modal-input:focus{border-top-color:var(--red2);}
+.modal-btn{width:100%;background:var(--red);color:var(--paper);font-family:var(--display);font-size:20px;letter-spacing:3px;padding:13px;border:none;cursor:pointer;transition:background .2s;}
+.modal-btn:hover{background:var(--red2);}
+
+/* ── WELCOME ── */
+#screen-welcome{background:var(--ink);color:var(--paper);position:relative;overflow:hidden;align-items:stretch;}
+#screen-welcome::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;}
+.w-tape{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--red);}
+.w-inner{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1000px;margin:0 auto;width:100%;padding:80px 64px;position:relative;z-index:1;}
+.w-kicker{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+.w-kicker-line{height:1px;background:rgba(245,240,232,.15);width:64px;}
+.w-kicker-txt{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red2);}
+.w-logo{font-family:var(--display);font-size:clamp(96px,17vw,190px);line-height:.88;color:var(--paper);letter-spacing:-2px;margin-bottom:4px;}
+.w-logo-sub{font-family:var(--display);font-size:clamp(28px,5vw,56px);letter-spacing:10px;color:var(--red);margin-bottom:38px;}
+.w-deck{font-family:var(--serif);font-style:italic;font-size:clamp(14px,1.8vw,17px);color:rgba(245,240,232,.6);line-height:1.75;max-width:500px;margin-bottom:52px;border-left:2px solid var(--red);padding-left:20px;}
+.w-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+.w-stats{display:flex;gap:40px;}
+.wstat-n{font-family:var(--display);font-size:52px;line-height:1;color:var(--paper);}
+.wstat-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,232,.35);margin-top:2px;}
+.btn-enter{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:var(--paper);font-family:var(--display);font-size:22px;letter-spacing:3px;padding:13px 38px;border:none;cursor:pointer;transition:all .2s;}
+.btn-enter:hover{background:var(--red2);transform:translateY(-2px);box-shadow:0 12px 36px rgba(191,55,40,.4);}
+.w-issue{position:absolute;top:36px;right:56px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:rgba(245,240,232,.2);text-transform:uppercase;z-index:1;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:54px;background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:200;}
+.tb-brand{display:flex;align-items:baseline;gap:6px;}
+.tb-logo{font-family:var(--display);font-size:24px;letter-spacing:2px;color:var(--paper);}
+.tb-sep{font-family:var(--mono);font-size:10px;color:rgba(245,240,232,.25);margin:0 3px;}
+.tb-section{font-family:var(--mono);font-size:11px;color:var(--red2);letter-spacing:1.5px;text-transform:uppercase;}
+.tb-center{display:flex;align-items:center;gap:16px;}
+.tb-student{font-family:var(--mono);font-size:11px;color:rgba(245,240,232,.5);letter-spacing:1px;}
+.tb-score{display:flex;align-items:center;gap:10px;}
+.tb-pts{font-family:var(--display);font-size:22px;color:var(--gold);letter-spacing:1px;min-width:40px;}
+.tb-pts-label{font-family:var(--mono);font-size:9px;color:rgba(245,240,232,.3);letter-spacing:2px;text-transform:uppercase;}
+.tb-prog-track{width:90px;height:3px;background:rgba(245,240,232,.12);}
+.tb-prog-fill{height:100%;background:var(--gold);transition:width .5s cubic-bezier(.4,0,.2,1);}
+.tb-btn{background:transparent;border:1px solid rgba(245,240,232,.18);color:rgba(245,240,232,.55);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.tb-btn:hover{border-color:var(--red2);color:var(--red2);}
+
+/* ── LEVELS ── */
+#screen-levels{background:var(--paper);}
+.lv-hero{background:var(--ink2);color:var(--paper);padding:50px 60px;border-bottom:3px solid var(--red);position:relative;overflow:hidden;}
+.lv-hero::before{content:'NIVEL';position:absolute;right:-10px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:var(--display);font-size:110px;color:rgba(255,255,255,.03);pointer-events:none;letter-spacing:8px;}
+.lv-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red2);margin-bottom:12px;}
+.lv-title{font-family:var(--display);font-size:clamp(44px,6vw,78px);line-height:.9;letter-spacing:1px;margin-bottom:10px;}
+.lv-sub{font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(245,240,232,.5);}
+.lv-body{padding:44px 60px;max-width:1100px;margin:0 auto;width:100%;}
+.lv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line2);}
+.lv-card{padding:34px 28px;border-right:1px solid var(--line2);cursor:pointer;position:relative;transition:background .25s;overflow:hidden;min-height:280px;display:flex;flex-direction:column;background:var(--paper);}
+.lv-card:last-child{border-right:none;}
+.lv-card:hover:not(.locked){background:var(--paper2);}
+.lv-card.locked{opacity:.45;cursor:not-allowed;}
+.lv-stripe{position:absolute;top:0;left:0;right:0;height:4px;transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+.lv-card:not(.locked):hover .lv-stripe{transform:scaleX(1);}
+.lv-num{font-family:var(--display);font-size:80px;line-height:1;color:var(--line);margin-bottom:14px;}
+.lv-badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;margin-bottom:12px;align-self:flex-start;}
+.lv-name{font-family:var(--display);font-size:34px;letter-spacing:1px;color:var(--text);margin-bottom:8px;line-height:1;}
+.lv-desc{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.6;flex:1;}
+.lv-foot{display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);}
+.lv-count{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.lv-arrow{font-family:var(--mono);font-size:14px;transition:transform .2s;}
+.lv-card:not(.locked):hover .lv-arrow{transform:translateX(5px);}
+.lv-progress{position:absolute;bottom:0;left:0;height:3px;transition:width .5s ease;}
+
+/* ── STANDS ── */
+#screen-stands{background:var(--paper);}
+.st-hero{padding:46px 60px;border-bottom:1px solid var(--line2);}
+.st-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid var(--line2);border-left:1px solid var(--line2);max-width:1100px;margin:0 auto;}
+.st-tile{padding:38px 34px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2);cursor:pointer;transition:background .2s;position:relative;overflow:hidden;min-height:215px;display:flex;flex-direction:column;}
+.st-tile:hover{background:var(--paper2);}
+.st-rule{position:absolute;top:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.st-tile:hover .st-rule{transform:scaleX(1);}
+.st-index{font-family:var(--display);font-size:60px;line-height:1;color:var(--line);position:absolute;top:18px;right:26px;}
+.st-type{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.st-name{font-family:var(--display);font-size:40px;letter-spacing:1px;line-height:1;margin-bottom:10px;}
+.st-desc{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.65;flex:1;max-width:340px;}
+.st-foot{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--text3);}
+
+/* ── ACTIVITY ── */
+#screen-activity{background:var(--paper);}
+.act-wrap{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 54px);}
+.act-left{background:var(--ink);color:var(--paper);padding:52px 48px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.act-left::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--red);}
+.act-dropcap{position:absolute;bottom:-15px;right:-8px;font-family:var(--display);font-size:260px;line-height:1;color:rgba(255,255,255,.022);pointer-events:none;user-select:none;}
+.act-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 13px;border:1px solid;align-self:flex-start;margin-bottom:26px;}
+.act-seq{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(245,240,232,.28);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.act-seq::after{content:'';flex:1;height:1px;background:rgba(245,240,232,.08);}
+.act-frag{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2.1vw,20px);line-height:1.88;color:var(--paper);flex:1;position:relative;padding-left:22px;}
+.act-frag-bar{position:absolute;left:0;top:6px;bottom:6px;width:2px;border-radius:1px;}
+.act-attr{margin-top:32px;padding-top:22px;border-top:1px solid rgba(245,240,232,.1);}
+.act-author{font-family:var(--display);font-size:18px;letter-spacing:2px;}
+.act-work{font-family:var(--serif);font-style:italic;font-size:11px;color:rgba(245,240,232,.38);margin-top:4px;}
+.act-right{background:var(--paper);padding:52px 48px;display:flex;flex-direction:column;}
+.act-qtype{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.act-qtype::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.act-question{font-family:var(--serif);font-size:clamp(15px,1.9vw,19px);font-weight:700;line-height:1.45;color:var(--text);margin-bottom:26px;}
+
+/* MCQ */
+.opts{display:flex;flex-direction:column;gap:8px;flex:1;}
+.opt{display:flex;align-items:flex-start;gap:13px;padding:13px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:all .18s;position:relative;}
+.opt::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;transform:scaleY(0);transform-origin:top;transition:transform .2s;}
+.opt:hover{background:var(--paper2);}
+.opt:hover::before{transform:scaleY(1);background:var(--act-color,var(--red));}
+.opt.correct{border-color:var(--teal);background:var(--teal-pale);}
+.opt.correct::before{background:var(--teal);transform:scaleY(1);}
+.opt.wrong{border-color:var(--red);background:var(--red-pale);}
+.opt.wrong::before{background:var(--red);transform:scaleY(1);}
+.opt-l{font-family:var(--display);font-size:17px;color:var(--text3);min-width:19px;line-height:1.3;transition:color .2s;}
+.opt.correct .opt-l{color:var(--teal);}
+.opt.wrong .opt-l{color:var(--red);}
+.opt-t{font-family:var(--sans);font-size:13px;color:var(--text2);line-height:1.5;flex:1;transition:color .2s;}
+.opt:hover .opt-t{color:var(--text);}
+.opt.correct .opt-t{color:var(--teal);}
+.opt.wrong .opt-t{color:var(--red);}
+.opt-ic{margin-left:auto;font-size:15px;opacity:0;}
+.opt.correct .opt-ic,.opt.wrong .opt-ic{opacity:1;}
+
+/* OPEN */
+.open-prompt{font-family:var(--serif);font-style:italic;font-size:14px;line-height:1.7;color:var(--paper);margin-bottom:14px;padding:15px 18px;background:var(--ink);border-left:4px solid;}
+.open-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:7px;}
+.open-hint{background:var(--paper3);border-left:3px solid var(--text3);padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.5;}
+.open-ta{width:100%;flex:1;min-height:140px;background:var(--paper2);border:1px solid var(--line2);border-top:3px solid var(--line2);color:var(--text);font-family:var(--serif);font-size:14px;line-height:1.75;padding:14px 16px;resize:vertical;outline:none;transition:border-top-color .2s;}
+.open-ta:focus{border-top-color:var(--act-color,var(--red));}
+.open-ta::placeholder{color:var(--text3);font-style:italic;}
+.charcount{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;margin-top:5px;}
+.open-sent{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.7;padding:14px;background:var(--paper3);border-left:3px solid;}
+
+/* FEEDBACK */
+.fb{margin-top:16px;padding:15px 18px;border-left:4px solid var(--teal);background:var(--teal-pale);display:none;}
+.fb.wrong{border-color:var(--red);background:var(--red-pale);}
+.fb.show{display:block;}
+.fb-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:7px;}
+.fb.wrong .fb-label{color:var(--red);}
+.fb-text{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text);line-height:1.6;}
+
+/* ACTIONS */
+.actions{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn-p{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:var(--paper);font-family:var(--display);font-size:16px;letter-spacing:2px;padding:10px 24px;border:none;cursor:pointer;transition:all .2s;}
+.btn-p:hover{background:var(--red2);transform:translateY(-1px);}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-s{display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:10px 16px;cursor:pointer;transition:all .2s;}
+.btn-s:hover{border-color:var(--text2);color:var(--text);}
+
+/* SERVER STATUS */
+.server-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border:1px solid;}
+.server-status.ok{border-color:var(--teal);color:var(--teal);}
+.server-status.off{border-color:var(--text3);color:var(--text3);}
+.server-dot{width:5px;height:5px;border-radius:50%;}
+.server-status.ok .server-dot{background:var(--teal);}
+.server-status.off .server-dot{background:var(--text3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:var(--gold);font-family:var(--display);font-size:18px;letter-spacing:2px;padding:11px 20px;border-left:4px solid var(--gold);z-index:9000;animation:pop .3s ease;display:none;}
+.toast.show{display:flex;align-items:center;gap:8px;}
+
+/* SUMMARY */
+#screen-summary{background:var(--ink);color:var(--paper);align-items:center;justify-content:center;text-align:center;padding:80px 40px;}
+.sum-stamp{display:inline-block;border:4px solid var(--gold);padding:7px 22px;font-family:var(--display);font-size:14px;letter-spacing:4px;color:var(--gold);transform:rotate(-3deg);margin-bottom:36px;animation:stampDrop .5s ease forwards;}
+.sum-title{font-family:var(--display);font-size:clamp(56px,10vw,110px);line-height:.88;letter-spacing:2px;margin-bottom:8px;}
+.sum-title span{color:var(--red);}
+.sum-sub{font-family:var(--serif);font-style:italic;font-size:15px;color:rgba(245,240,232,.48);margin-bottom:52px;}
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(245,240,232,.1);max-width:600px;width:100%;margin:0 auto 44px;}
+.sum-tile{padding:24px 14px;border-right:1px solid rgba(245,240,232,.1);text-align:center;}
+.sum-tile:last-child{border-right:none;}
+.sum-n{font-family:var(--display);font-size:48px;line-height:1;margin-bottom:5px;}
+.sum-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,232,.28);}
+.sum-acts{display:flex;gap:12px;justify-content:center;}
+.btn-sum-p{background:var(--red);color:var(--paper);font-family:var(--display);font-size:18px;letter-spacing:2px;padding:12px 30px;border:none;cursor:pointer;transition:all .2s;}
+.btn-sum-p:hover{background:var(--red2);}
+.btn-sum-s{background:transparent;border:1px solid rgba(245,240,232,.22);color:rgba(245,240,232,.55);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:12px 18px;cursor:pointer;transition:all .2s;}
+.btn-sum-s:hover{border-color:rgba(245,240,232,.5);color:var(--paper);}
+
+/* NOTIF SERVIDOR */
+.server-notif{font-family:var(--mono);font-size:10px;margin-top:12px;padding:8px 14px;border-left:3px solid;}
+.server-notif.ok{border-color:var(--teal);color:var(--teal);background:var(--teal-pale);}
+.server-notif.fail{border-color:var(--text3);color:var(--text3);background:var(--paper3);}
+
+@media(max-width:768px){
+  .w-inner{padding:52px 26px;}
+  .lv-body,.st-hero{padding:28px 20px;}
+  .lv-grid{grid-template-columns:1fr;}
+  .lv-card{border-right:none;border-bottom:1px solid var(--line2);}
+  .st-grid{grid-template-columns:1fr;}
+  .act-wrap{grid-template-columns:1fr;}
+  .act-left{min-height:280px;}
+  .topbar{padding:0 18px;}
+  .sum-grid{grid-template-columns:repeat(2,1fr);}
+  .tb-student{display:none;}
+}
+
+/* ── MECÁNICAS LÚDICAS ── */
+.game-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid;margin-bottom:18px;align-self:flex-start;}
+.game-icon{font-size:16px;line-height:1;}
+.detective-clues{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.clue-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;font-family:var(--mono);font-size:11px;background:rgba(245,240,232,.07);border:1px dashed rgba(245,240,232,.2);color:rgba(245,240,232,.7);}
+.clue-icon{font-size:12px;}
+.decoder-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;}
+.decoder-card{padding:10px 12px;font-family:var(--mono);font-size:11px;background:rgba(245,240,232,.05);border:1px solid rgba(245,240,232,.12);color:rgba(245,240,232,.6);text-align:center;}
+.decoder-val{font-family:var(--display);font-size:20px;color:var(--gold);display:block;margin-bottom:2px;}
+.mission-card{background:rgba(245,240,232,.06);border:1px solid rgba(245,240,232,.12);border-left:3px solid;padding:14px 16px;margin-bottom:14px;}
+.mission-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.6;}
+.mission-body{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.65;color:rgba(245,240,232,.8);}
+.opt-game{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.opt-game::after{content:'';position:absolute;inset:0;background:var(--act-color,var(--red));opacity:0;transition:opacity .15s;}
+.opt-game:hover::after{opacity:.04;}
+.opt-game:hover{border-color:var(--act-color,var(--red));transform:translateX(3px);}
+.opt-game.correct{border-color:var(--teal);background:var(--teal-pale);}
+.opt-game.wrong{border-color:var(--red);background:var(--red-pale);}
+.opt-game-emoji{font-size:18px;min-width:26px;text-align:center;}
+.opt-game-letter{font-family:var(--display);font-size:17px;color:var(--text3);min-width:18px;}
+.opt-game-text{font-family:var(--sans);font-size:13px;color:var(--text2);flex:1;line-height:1.45;}
+.opt-game.correct .opt-game-text,.opt-game.correct .opt-game-letter{color:var(--teal);}
+.opt-game.wrong .opt-game-text,.opt-game.wrong .opt-game-letter{color:var(--red);}
+.opt-game-result{margin-left:auto;font-size:14px;opacity:0;}
+.opt-game.correct .opt-game-result,.opt-game.wrong .opt-game-result{opacity:1;}
+.field-note{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:rgba(245,240,232,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.field-note::before{content:'';flex:1;height:1px;background:rgba(245,240,232,.1);}
+.field-note::after{content:'';flex:1;height:1px;background:rgba(245,240,232,.1);}
+.author-ghost{background:var(--ink2);border:1px solid rgba(245,240,232,.1);border-left:3px solid;padding:14px 18px;margin-bottom:14px;}
+.author-ghost-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;opacity:.5;}
+.author-ghost-text{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.65;color:rgba(245,240,232,.75);}
+.xp-hint{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(176,125,14,.08);border:1px solid rgba(176,125,14,.2);font-family:var(--mono);font-size:10px;color:var(--gold);margin-bottom:12px;}
+.writing-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.writing-goal{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.writing-goal span{color:var(--teal);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- ══ MODAL NOMBRE ══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-eyebrow">Bienvenido a RedLab</div>
+    <div class="modal-title">¿Cómo te llamas?</div>
+    <p class="modal-sub">Tu nombre se usará para registrar tu progreso y guardarlo en los resultados de la plataforma.</p>
+    <input class="modal-input" id="nameInput" type="text" placeholder="Escribe tu nombre completo" maxlength="60" onkeydown="if(event.key==='Enter') startSession()">
+    <button class="modal-btn" onclick="startSession()">Comenzar →</button>
+  </div>
+</div>
+
+<!-- ══ WELCOME ══ -->
+<section id="screen-welcome" class="screen active">
+  <div class="w-tape"></div>
+  <div class="w-issue">REDLAB · VOL.1 · 2025</div>
+  <div class="w-inner">
+    <div class="w-kicker au"><span class="w-kicker-line"></span><span class="w-kicker-txt">Plataforma de comprensión lectora · Mario Mendoza</span><span class="w-kicker-line"></span></div>
+    <div class="w-logo au d1">RED</div>
+    <div class="w-logo-sub au d2">LAB</div>
+    <p class="w-deck au d3">Una experiencia literaria construida sobre la prosa oscura de Mario Mendoza. Tres niveles, cuatro stands, 48 actividades de análisis, interpretación y creación.</p>
+    <div class="w-bottom">
+      <div class="w-stats au d4">
+        <div><div class="wstat-n">3</div><div class="wstat-l">Niveles</div></div>
+        <div><div class="wstat-n">4</div><div class="wstat-l">Stands</div></div>
+        <div><div class="wstat-n">48</div><div class="wstat-l">Actividades</div></div>
+      </div>
+      <button class="btn-enter au d5" onclick="document.getElementById('modalOverlay').classList.remove('hidden')">Iniciar <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LEVELS ══ -->
+<section id="screen-levels" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-sep">/</span><span class="tb-section">Niveles</span></div>
+    <div class="tb-center">
+      <span class="tb-student" id="tb-student-lv">—</span>
+      <div class="server-status off" id="srv-lv"><div class="server-dot"></div><span id="srv-lv-txt">servidor</span></div>
+    </div>
+    <div class="tb-score"><span class="tb-pts" id="pts-lv">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-lv" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div></div>
+  </nav>
+  <div class="lv-hero">
+    <div class="lv-eyebrow au">Ruta de aprendizaje</div>
+    <h1 class="lv-title au d1">¿Cuánto<br>profundizas?</h1>
+    <p class="lv-sub au d2">Cada nivel desbloquea nuevas formas de leer. Avanza completando actividades.</p>
+  </div>
+  <div class="lv-body"><div class="lv-grid" id="lvGrid"></div></div>
+</section>
+
+<!-- ══ STANDS ══ -->
+<section id="screen-stands" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-sep">/</span><span class="tb-section" id="st-lv-label">Básico</span></div>
+    <div class="tb-center"><span class="tb-student" id="tb-student-st">—</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-st">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-st" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div>
+    <button class="tb-btn" style="margin-left:12px" onclick="goTo('levels')">← Niveles</button></div>
+  </nav>
+  <div class="st-hero">
+    <div class="lv-eyebrow" id="st-eyebrow">Nivel</div>
+    <h2 style="font-family:var(--display);font-size:clamp(38px,5vw,62px);letter-spacing:1px;line-height:1;margin-bottom:6px" id="st-title">Elige tu stand</h2>
+    <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2)" id="st-sub">Selecciona una modalidad de actividad.</p>
+  </div>
+  <div style="max-width:1100px;width:100%;margin:0 auto;padding-bottom:40px"><div class="st-grid" id="stGrid"></div></div>
+</section>
+
+<!-- ══ ACTIVITY ══ -->
+<section id="screen-activity" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-sep">/</span><span class="tb-section" id="act-tb">Stand</span></div>
+    <div class="tb-center"><span class="tb-student" id="tb-student-act">—</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-act">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-act" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div>
+    <button class="tb-btn" style="margin-left:12px" onclick="goTo('stands')">← Stands</button></div>
+  </nav>
+  <div class="act-wrap" id="actWrap"></div>
+</section>
+
+<!-- ══ SUMMARY ══ -->
+<section id="screen-summary" class="screen">
+  <nav class="topbar" style="position:relative;z-index:1">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-sum">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-sum" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div></div>
+    <div></div>
+  </nav>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;">
+    <div class="sum-stamp">Nivel completado</div>
+    <div class="sum-title">RED<span>LAB</span></div>
+    <p class="sum-sub" id="sum-msg">¡Excelente trabajo!</p>
+    <div class="sum-grid" id="sumGrid"></div>
+    <div id="sum-server-msg"></div>
+    <div class="sum-acts" style="margin-top:24px">
+      <button class="btn-sum-s" onclick="goTo('levels')">← Cambiar nivel</button>
+      <button class="btn-sum-p" onclick="goTo('stands')">Continuar →</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast">✦ <span id="toast-txt">+15 pts</span></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   BANCO DE ACTIVIDADES — 48 en total
+   4 por cada combinación nivel(3) × stand(4)
+══════════════════════════════════════════════ */
+const DATA = {
+
+/* ─────────────────────────────── BÁSICO ─── */
+basico: {
+  lectura: [
+    { frag:"Bogotá era una ciudad que se devoraba a sus propios hijos. Rodrigo lo sabía cada vez que cruzaba el puente de la Calle 26 antes del amanecer, mirando los ríos de luz de los carros que nunca dormían. Nadie lo esperaba al otro lado, pero eso ya no le importaba.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Qué hace Rodrigo en el fragmento?",
+      opts:["A. Duerme bajo el puente de la Calle 26","B. Cruza el puente antes del amanecer mirando los carros","C. Conduce un carro por la autopista","D. Espera a alguien al otro lado del puente"],
+      ok:1, exp:"El texto dice claramente que Rodrigo 'cruzaba el puente de la Calle 26 antes del amanecer, mirando los ríos de luz de los carros'. La opción B recoge exactamente esas dos acciones descritas." },
+    { frag:"El apartamento olía a cigarrillos baratos y promesas rotas. Sobre la mesa había tres cartas sin abrir y una botella vacía de aguardiente. Mariana no había salido en cuatro días.",
+      obra:"Satanás",
+      pregunta:"¿Cuántos días lleva Mariana sin salir?",
+      opts:["A. Una semana","B. Dos días","C. Cuatro días","D. Un mes"],
+      ok:2, exp:"El fragmento afirma directamente que 'Mariana no había salido en cuatro días'. La información está dicha de manera explícita al final del texto, sin necesidad de inferencia." },
+    { frag:"El hombre del sombrero café entró al Café Pasaje y pidió un tinto sin azúcar. Se sentó siempre en la misma mesa del rincón, de espaldas a la pared, con la vista fija en la puerta.",
+      obra:"Bello animal",
+      pregunta:"¿Dónde prefiere sentarse el hombre del sombrero?",
+      opts:["A. En la terraza, mirando la calle","B. En el centro del salón junto a la ventana","C. En la mesa del rincón, de espaldas a la pared","D. En la barra del bar junto al mesero"],
+      ok:2, exp:"El texto especifica: 'se sentó siempre en la misma mesa del rincón, de espaldas a la pared'. Todos los detalles señalados (rincón, espaldas a la pared, vista en la puerta) corresponden a la opción C." },
+    { frag:"El bus pasó de largo. Era el tercero que hacía lo mismo. Camila miró el reloj: las seis y cuarto de la mañana. Tenía que estar en el trabajo a las siete. Decidió caminar.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Qué decide hacer Camila al final del fragmento?",
+      opts:["A. Tomar un taxi","B. Llamar al trabajo para avisar que llegará tarde","C. Esperar el siguiente bus","D. Ir al trabajo caminando"],
+      ok:3, exp:"El último enunciado del fragmento lo dice directamente: 'Decidió caminar.' No hay ambigüedad ni inferencia necesaria." }
+  ],
+  interpretacion: [
+    { frag:"Caminaba entre la gente como si fuera invisible. Sus zapatos rotos dejaban huellas de agua sobre el mármol del centro comercial. Nadie lo miraba.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Qué sentimiento predomina en el personaje?",
+      opts:["A. Alegría por estar entre tanta gente","B. Orgullo de caminar por el centro comercial","C. Soledad y exclusión social","D. Ira contra quienes lo ignoran"],
+      ok:2, exp:"La imagen de caminar 'como si fuera invisible', los 'zapatos rotos' y el hecho de que 'nadie lo miraba' construyen una atmósfera de marginación y soledad. El personaje existe en un espacio público sin ser reconocido." },
+    { frag:"Cada mañana el despertador sonaba a las cinco. Él lo apagaba. Volvía a sonar. Lo volvía a apagar. El trabajo ya no existía, pero el despertador seguía funcionando.",
+      obra:"Scorpio City",
+      pregunta:"¿Qué emoción transmite el personaje con su rutina?",
+      opts:["A. Disciplina y amor por el orden","B. Desorientación y pérdida de sentido vital","C. Tranquilidad y descanso merecido","D. Felicidad por no tener obligaciones"],
+      ok:1, exp:"El contraste entre la rutina mecánica del despertador y la ausencia de trabajo ('el trabajo ya no existía') revela una existencia vaciada de propósito. El personaje repite gestos sin razón, lo cual denota desorientación profunda." },
+    { frag:"Laura guardaba cada carta en una caja de zapatos debajo de la cama. Nunca las había respondido. Nunca las abriría. Pero tampoco podía tirarlas.",
+      obra:"El día del juicio",
+      pregunta:"¿Qué estado emocional revela la actitud de Laura con las cartas?",
+      opts:["A. Indiferencia total hacia el pasado","B. Ambivalencia: no puede soltar ni enfrentar el pasado","C. Deseo de venganza contra quien las escribió","D. Curiosidad que aún no se atreve a satisfacer"],
+      ok:1, exp:"Laura ni responde, ni abre, ni tira las cartas. Esa triple negación revela ambivalencia: el pasado le pesa emocionalmente, pero no puede ni enfrentarlo ni liberarse de él." },
+    { frag:"Andrés sonrió cuando le dieron el diploma. Era la misma sonrisa que ponía en las fotos, la que había practicado frente al espejo. Sus padres aplaudieron. Él pensó en salir corriendo.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué nos revela el contraste entre la sonrisa de Andrés y su pensamiento?",
+      opts:["A. Que Andrés es muy tímido y no sabe cómo actuar","B. Que Andrés siente una profunda insatisfacción que oculta detrás de una máscara social","C. Que Andrés está muy cansado de la ceremonia","D. Que la sonrisa es señal de auténtica felicidad"],
+      ok:1, exp:"La sonrisa 'practicada frente al espejo' y el pensamiento de 'salir corriendo' son opuestos. Esto revela que el personaje representa un papel social que no coincide con su estado emocional real." }
+  ],
+  escritura: [
+    { frag:"El bus se llenó en la calle 80. Él entró de último y se quedó de pie, apretado contra la puerta. A través del vidrio empañado vio su propio reflejo y por un momento no se reconoció.",
+      obra:"La travesía de los cuerpos",
+      consigna:"¿Qué está pensando o sintiendo este personaje en ese momento? Escribe su pensamiento interior en al menos 4 oraciones. Usa la primera persona (yo).",
+      hint:"Pista: piensa en qué significa no reconocerse en un espejo. ¿Qué ha cambiado en él? ¿Qué ha perdido?" },
+    { frag:"La lluvia golpeaba el techo de zinc con fuerza. Ella apagó la luz y se quedó sentada en la oscuridad, escuchando. No esperaba nada. Solo escuchaba.",
+      obra:"Los cuerpos del invierno",
+      consigna:"Continúa esta escena en al menos 4 oraciones. ¿Qué pasa después? ¿Qué llega con la lluvia o con la oscuridad? Puedes inventar lo que quieras.",
+      hint:"Pista: en los textos de Mendoza, la lluvia nunca es solo lluvia. Puede traer un recuerdo, una visita inesperada o un miedo antiguo." },
+    { frag:"Don Pedro vendía lotería en la esquina del Parque Nacional desde hace treinta años. Nunca había ganado nada. Pero cada semana compraba un billete para él.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"Escribe el monólogo interior de Don Pedro en ese momento en que compra su billete semanal. ¿Qué piensa? ¿Qué sueña? ¿Qué sabe que nunca ocurrirá? (Mínimo 4 oraciones, primera persona)",
+      hint:"Pista: ¿por qué alguien que sabe que no ganará sigue comprando? Ahí está el corazón del personaje." },
+    { frag:"El taxista recogió al último pasajero a las dos de la mañana en el barrio Chapinero. El hombre no dijo ninguna dirección. Solo dijo: maneje. Y el taxista manejó.",
+      obra:"Perder es cuestión de método",
+      consigna:"Escribe lo que piensa el taxista durante los primeros cinco minutos de ese viaje sin destino. ¿Tiene miedo? ¿Curiosidad? ¿Ha vivido esto antes? (Mínimo 4 oraciones, primera persona)",
+      hint:"Pista: la noche en Bogotá tiene sus propias reglas. ¿Qué le ha enseñado al taxista manejar de noche?" }
+  ],
+  creativo: [
+    { frag:"Bogotá amanecía siempre gris, envuelta en una neblina que no era niebla sino el aliento de los muertos recientes.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"Escribe un poema de exactamente 6 versos inspirado en esta imagen de Bogotá. Cada verso debe tener al menos una imagen concreta: un objeto, un color, un sonido o una textura.",
+      hint:"Pista: piensa en Bogotá como un ser vivo que respira, recuerda y guarda secretos bajo el asfalto." },
+    { frag:"El saxofón del parque Santander sonaba a medianoche. Nadie sabía quién tocaba. Cuando la gente se acercaba, la música paraba. Cuando se alejaban, volvía.",
+      obra:"Perder es cuestión de método",
+      consigna:"Escribe una historia brevísima (5 oraciones) sobre quién toca el saxofón y por qué desaparece cuando se acercan. Puedes inventar cualquier explicación: un fantasma, un fugitivo, algo inesperado.",
+      hint:"Pista: en Mendoza, lo misterioso siempre tiene una explicación humana y dolorosa. Busca esa explicación." },
+    { frag:"Encontraron el cuaderno de Santiago debajo del puente. Tenía ochenta páginas escritas. En la última, solo una frase: 'Aquí vivió alguien que nadie recordará'.",
+      obra:"Los cuerpos del invierno",
+      consigna:"Escribe una de las páginas del cuaderno de Santiago. Inventa un momento específico de su vida: un recuerdo, un encuentro, una pérdida. Escríbelo en 5 oraciones como si fuera un diario íntimo.",
+      hint:"Pista: el diario de alguien invisible debe tener detalles muy concretos y sensoriales. Eso lo hace real y conmovedor." },
+    { frag:"La ciudad tiene un idioma propio. No son las palabras de los políticos ni los titulares de los periódicos. Es el idioma de los grafitis, de los semáforos rotos, de las esquinas que huelen a miedo.",
+      obra:"Scorpio City",
+      consigna:"Escribe 3 estrofas de 2 versos cada una (6 versos en total) donde describes tres 'palabras' del idioma de tu ciudad. Cada estrofa es una imagen concreta que 'dice algo' sobre la vida urbana.",
+      hint:"Pista: ¿Qué dice un semáforo roto que nadie arregla? ¿Qué dice una tienda con rejas? ¿Qué dice una cancha sin niños?" }
+  ]
+},
+
+/* ────────────────────────────── INTERMEDIO ─── */
+intermedio: {
+  lectura: [
+    { frag:"Don Armando llevaba veinte años manejando el mismo taxi. Conocía cada hueco de la ciudad, cada atajo, cada esquina peligrosa. Esa noche recogió a un pasajero en Chapinero que no dijo ninguna dirección. Solo dijo: maneje.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué se puede inferir sobre el pasajero misterioso?",
+      opts:["A. Es un turista perdido que no conoce la ciudad","B. Es alguien en situación límite que huye sin destino definido","C. Es un policía encubierto que vigila a Don Armando","D. Es un amigo del taxista que le gasta una broma"],
+      ok:1, exp:"No dar una dirección y decir solo 'maneje' indica que el pasajero evita un destino o está en un estado emocional que le impide tener un rumbo. Es una huida o un extravío voluntario. Las otras opciones no tienen fundamento en el texto." },
+    { frag:"El expediente de Juliana tenía dieciséis páginas. El juez lo leyó en tres minutos, lo cerró y lo dejó sobre la pila de los casos sin resolver. Afuera, ella seguía esperando en la misma silla de plástico de siempre.",
+      obra:"La vendedora de rosas",
+      pregunta:"¿Qué se puede inferir sobre el sistema de justicia descrito en el fragmento?",
+      opts:["A. Que es eficiente y resuelve casos con rapidez","B. Que el juez es responsable pero tiene mucho trabajo","C. Que el sistema es indiferente y abandona a personas como Juliana","D. Que Juliana es culpable y por eso no recibe atención"],
+      ok:2, exp:"Leer 16 páginas en 3 minutos y archivar el caso sin resolver, mientras ella espera 'en la misma silla de siempre', revela un patrón de abandono institucional. La justicia aquí es una rutina burocrática, no una garantía de derechos." },
+    { frag:"Cada vez que sonaba el teléfono en esa casa, los niños dejaban de reír. La madre cerraba los ojos un segundo antes de contestar. El padre miraba hacia la ventana.",
+      obra:"Bello animal",
+      pregunta:"¿Qué se infiere sobre la situación familiar?",
+      opts:["A. La familia espera una buena noticia con ansiedad","B. La familia vive bajo una amenaza crónica que todos conocen y temen","C. El teléfono tiene un sonido muy fuerte que asusta a todos","D. Los niños son muy traviesos y temen ser regañados"],
+      ok:1, exp:"Las reacciones automáticas y coordinadas de toda la familia ante el teléfono revelan un miedo aprendido y compartido. Ese comportamiento colectivo e instintivo solo se explica por una amenaza conocida y reiterada." },
+    { frag:"La señora Ríos cocinó para seis personas esa noche. Puso seis platos, seis vasos, seis cubiertos. Luego se sentó sola a la mesa y esperó hasta las diez. Recogió todo sin comer nada y fue a dormir.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Qué se puede inferir sobre la vida de la señora Ríos?",
+      opts:["A. Que espera visitas que ya sabe que no vendrán","B. Que se equivocó al contar los cubiertos","C. Que tiene hambre pero está a dieta","D. Que su familia llega siempre tarde del trabajo"],
+      ok:0, exp:"Poner seis puestos y esperar hasta las diez sin que nadie llegue, para luego recoger sin comer, indica que la señora Ríos mantiene un ritual de espera por personas que ya no están o que no van a volver." }
+  ],
+  interpretacion: [
+    { frag:"La ciudad era un animal herido que arrastraba sus vísceras por las calles del centro. Cada semáforo era una llaga. Cada trancón, un coágulo que no sanaba.",
+      obra:"Satanás",
+      pregunta:"¿Qué simboliza la metáfora de la ciudad como animal herido?",
+      opts:["A. Que Bogotá está llena de animales peligrosos","B. Que la ciudad sufre y no puede sanar sus heridas sociales","C. Que los semáforos y el tráfico dañan el ambiente","D. Que el narrador es veterinario y ve la ciudad con ojos clínicos"],
+      ok:1, exp:"La metáfora equipara el caos urbano —semáforos, trancones— con heridas físicas que no cicatrizan, convirtiendo a la ciudad en un cuerpo que padece. Es una crítica metafórica al deterioro social y urbano, no una descripción literal." },
+    { frag:"Había un espejo en el corredor que nadie limpiaba. Con el tiempo acumuló tanto polvo que dejó de reflejar. La abuela decía que era mejor así, que los espejos guardaban las almas de los muertos.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Qué simboliza el espejo cubierto de polvo?",
+      opts:["A. El descuido y la suciedad de la casa","B. El olvido voluntario del pasado y la resistencia a verse","C. La pobreza de la familia que no puede comprar uno nuevo","D. Una creencia en fantasmas como entretenimiento de ancianos"],
+      ok:1, exp:"El espejo que ya no refleja, unido a la justificación de la abuela sobre las 'almas de muertos', simboliza el rechazo consciente a enfrentar el pasado y la identidad propia. Es un olvido elegido, no accidental." },
+    { frag:"El río Bogotá avanzaba negro y silencioso entre las fábricas. Nadie se bañaba en él desde hacía décadas. Pero en las noches, algunos decían escuchar voces que venían del agua.",
+      obra:"Scorpio City",
+      pregunta:"¿Qué representan simbólicamente las voces del río contaminado?",
+      opts:["A. Una leyenda urbana sin ningún valor literario","B. El regreso sobrenatural de los muertos","C. Las víctimas del abandono que la sociedad no puede silenciar","D. El sonido del agua al chocar con las piedras"],
+      ok:2, exp:"En el universo de Mendoza, el río negro carga la historia de la violencia colombiana. Las voces representan las memorias de víctimas que la sociedad quiere olvidar pero no puede. Son el pasado que resurge desde lo que se creyó enterrado." },
+    { frag:"Todas las noches, antes de dormir, el viejo encendía una vela frente a una foto en blanco y negro. Nunca le hablaba a la foto. Solo la miraba hasta que la vela se apagaba sola.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Qué simboliza el ritual del viejo con la vela y la foto?",
+      opts:["A. Que el viejo tiene miedo a la oscuridad","B. Que la vela le da calor en las noches frías de Bogotá","C. Un duelo permanente: mantiene viva la presencia de alguien que ya no está","D. Que el viejo es muy religioso y hace sus oraciones antes de dormir"],
+      ok:2, exp:"El ritual nocturno, la foto en blanco y negro (símbolo del pasado), y el silencio del viejo frente a ella configuran un duelo contenido. La vela que se apaga sola marca el límite de lo que puede sostenerse: la memoria y la ausencia." }
+  ],
+  escritura: [
+    { frag:"Nelson llevaba tres años enviando hojas de vida que nunca respondían. Un martes cualquiera, en lugar de buscar empleo, se sentó en el Parque Bolívar y empezó a mirar a la gente pasar durante horas.",
+      obra:"La oscuridad nuestra de cada día",
+      consigna:"Analiza qué representa la decisión de Nelson de sentarse a mirar en lugar de buscar trabajo. Luego escribe lo que él observa: describe a 3 personas que ve pasar y lo que piensa de ellas. (Mínimo 5 oraciones en total)",
+      hint:"Pista: ¿qué dice de alguien dejar de luchar y simplemente observar? ¿Es rendición o es otra forma de resistencia?" },
+    { frag:"La profesora escribió en el tablero: '¿Quién es usted?' Los estudiantes la miraron en silencio. Nadie escribió nada. Pasaron veinte minutos. Ella borró la pregunta sin decir una palabra.",
+      obra:"El día del juicio",
+      consigna:"Escribe desde la perspectiva de uno de los estudiantes: ¿qué pensó durante esos veinte minutos? ¿Por qué no escribió nada? ¿Qué habría querido escribir si hubiera tenido valor? (Mínimo 5 oraciones, primera persona)",
+      hint:"Pista: la pregunta '¿quién soy?' puede parecer simple o puede ser la más aterradora del mundo. ¿De qué depende?" },
+    { frag:"El detective revisó la escena por tercera vez. Todo encajaba demasiado bien. En veinte años de carrera había aprendido que cuando todo encaja es porque alguien lo armó para que encajara.",
+      obra:"Perder es cuestión de método",
+      consigna:"Continúa la investigación del detective: ¿qué pista invisible descubre en la cuarta revisión? ¿Qué le dice esa pista sobre quién armó la escena y por qué? Escribe la escena en 5-6 oraciones con detalles concretos.",
+      hint:"Pista: los mejores detalles son los pequeños: una arruga en la alfombra, una taza de café todavía tibia, una ventana que cierra de más." },
+    { frag:"Había dos Colombias. La que aparecía en las fotos de los periódicos, con estadísticas de crecimiento y gente sonriente. Y la otra, que vivía entre las grietas de los reportajes y nunca cabía en ningún encuadre.",
+      obra:"La oscuridad nuestra de cada día",
+      consigna:"Escribe un párrafo desde la perspectiva de alguien que vive en la 'segunda Colombia', la que no sale en las fotos. ¿Cómo ve él o ella la Colombia de los periódicos? ¿Qué siente cuando ve esas imágenes? (Mínimo 5 oraciones)",
+      hint:"Pista: piensa en la brecha entre la imagen oficial de un país y la realidad de quienes están excluidos de esa imagen." }
+  ],
+  creativo: [
+    { frag:"Bogotá tiene mil nombres. Los taxis la llaman la ciudad de los trancones. Los indigentes, la ciudad del frío. Los enamorados, la ciudad de los jueves. Cada uno vive en una ciudad diferente, en el mismo espacio.",
+      obra:"La travesía de los cuerpos",
+      consigna:"Escribe un poema de 8 versos donde Bogotá habla en primera persona. Debe incluir: una imagen de la noche, una imagen de la desigualdad y una imagen de esperanza o resistencia.",
+      hint:"Pista: ¿qué diría una ciudad si pudiera hablar de sus propias contradicciones? ¿Qué ama de sí misma? ¿Qué le avergüenza?" },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles. Y eso, pensó el viejo, era todo lo que necesitabas para escribir una novela.",
+      obra:"Bello animal",
+      consigna:"Usando esta idea como punto de partida, escribe el primer párrafo de una novela ambientada en tu ciudad. Presenta a un personaje ordinario en una circunstancia imposible. (Mínimo 5 oraciones)",
+      hint:"Pista: los grandes inicios de novela presentan un mundo completo en pocas líneas. ¿Cuál es el detalle que lo cambia todo?" },
+    { frag:"El silencio de los testigos no era cobardía. Era un idioma. Un idioma que todos en ese barrio habían aprendido desde niños, cuando entendieron que hablar podía costar más que callar.",
+      obra:"Scorpio City",
+      consigna:"Escribe un monólogo interior de un testigo que vio algo que no puede decir. ¿Qué vio exactamente? ¿Por qué calla? ¿Qué le costó ese silencio? (6 oraciones, primera persona, presente)",
+      hint:"Pista: el silencio en Mendoza no es vacío: está lleno de miedo, de historia, de decisiones imposibles." },
+    { frag:"Sebastián aprendió a leer en la calle: los avisos de 'se busca', los precios de la fruta escrita con tiza, los nombres de los muertos en las coronas de flores. La calle era su primer libro.",
+      obra:"La ciudad de los umbrales",
+      consigna:"Escribe 3 'páginas' del libro de la calle de Sebastián: tres cosas que la calle le enseñó y que ningún colegio le habría podido enseñar. Cada enseñanza en 2-3 oraciones.",
+      hint:"Pista: ¿qué sabe alguien que creció en la calle que los demás ignoran? Piensa en el hambre, en leer personas, en saber cuándo correr." }
+  ]
+},
+
+/* ─────────────────────────────── AVANZADO ─── */
+avanzado: {
+  lectura: [
+    { frag:"El narrador nos dice que amaba a su madre. Luego, en el párrafo siguiente, describe con detalle clínico cómo organizó sus cosas después del velorio, numerando cada objeto como si inventariara una bodega. La palabra 'amor' no vuelve a aparecer.",
+      obra:"Satanás",
+      pregunta:"¿Qué efecto narrativo produce la contradicción entre lo que el narrador dice y lo que hace?",
+      opts:["A. Muestra que el narrador es muy organizado y práctico por naturaleza","B. Crea un narrador no confiable que revela frialdad emocional a través de sus actos","C. Indica que el autor olvidó desarrollar el tema del amor","D. Demuestra que en Colombia los funerales son eventos muy formales"],
+      ok:1, exp:"La distancia entre la declaración de amor y la conducta fría e inventarial construye un narrador no confiable: sus palabras y actos se contradicen, revelando una verdad emocional que él mismo no admite. El lector sabe más que el narrador sobre su propio estado." },
+    { frag:"Todo estaba escrito en los muros de la ciudad. Los grafitis, los afiches, los avisos de 'se arrienda'. Quien supiera leer esa escritura entendería la historia completa. Pero nadie miraba los muros.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué función narrativa cumple la ciudad como texto en este fragmento?",
+      opts:["A. Es un recurso decorativo para ambientar la escena","B. La ciudad se convierte en metanarrativa: un texto dentro del texto que denuncia la ceguera colectiva","C. Es una crítica directa al analfabetismo en Colombia","D. El narrador quiere ser grafitero y admira los muros"],
+      ok:1, exp:"La ciudad como texto legible que nadie lee funciona como metanarrativa: el relato habla de sí mismo como texto que la sociedad se niega a leer. La ceguera ante la escritura urbana es la ceguera ante la propia historia colectiva." },
+    { frag:"La historia se repetía. Como en el 48, como en el 85, como en todos los años que terminaban en sangre. Los viejos lo sabían. Los jóvenes creían que esta vez sería diferente. No lo fue.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Qué recurso narrativo usa el autor y qué efecto produce?",
+      opts:["A. Un flashback para recordar eventos históricos específicos","B. Una prolepsis para predecir el futuro del personaje principal","C. La circularidad histórica para mostrar que la violencia en Colombia se repite cíclicamente","D. Una elipsis para saltarse partes sin importancia"],
+      ok:2, exp:"La enumeración de fechas y la afirmación 'la historia se repetía' construyen una circularidad histórica, recurso central en Mendoza para mostrar la violencia colombiana no como un evento sino como un patrón que ninguna generación logra romper." },
+    { frag:"Escribir sobre Bogotá era imposible. La ciudad cambiaba mientras uno escribía. Para cuando terminabas la oración, el lugar ya no existía: lo habían demolido, renombrado, olvidado.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Qué plantea el fragmento sobre la relación entre escritura y realidad?",
+      opts:["A. Que Bogotá es una ciudad muy bien planificada y en constante mejora","B. Que la escritura es una actividad inútil en ciudades modernas","C. Que la realidad urbana es tan fugaz que la escritura siempre llega tarde: la literatura es necesariamente una arqueología del olvido","D. Que el narrador escribe muy lentamente y necesita mejorar"],
+      ok:2, exp:"El fragmento plantea una tensión epistemológica entre escritura y realidad: si la ciudad muta más rápido de lo que se puede registrar, toda escritura urbana es ya un documento de lo que fue, no de lo que es. La literatura se convierte en archivo del olvido." }
+  ],
+  interpretacion: [
+    { frag:"Los personajes de Mendoza no mueren de bala ni de enfermedad. Mueren de ciudad. Mueren de lunes. Mueren de la acumulación lenta de todo lo que no pudieron decir.",
+      obra:"Bello animal",
+      pregunta:"¿Cuál es el significado semántico profundo de 'morir de ciudad' en el contexto de la literatura urbana colombiana?",
+      opts:["A. Una hipérbole cómica sobre los problemas de transporte","B. La muerte simbólica causada por la alienación, la rutina y el silencio forzado en la ciudad moderna","C. Que la contaminación de Bogotá causa enfermedades respiratorias","D. Una referencia a la violencia del narcotráfico en los 90"],
+      ok:1, exp:"'Morir de ciudad, de lunes, de lo no dicho' construye una semántica de la muerte lenta por alienación. En la literatura urbana colombiana, la ciudad no solo mata físicamente: destruye la identidad, silencia la voz y aplasta el deseo. Es una crítica a la deshumanización del espacio urbano." },
+    { frag:"Había dos Colombias. La que aparecía en las fotos de los periódicos, con gente sonriente y estadísticas de crecimiento. Y la otra, que no cabía en ningún encuadre, que vivía entre las grietas de los reportajes.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Qué denuncia semántica hace el fragmento sobre la representación mediática de Colombia?",
+      opts:["A. Que el periodismo colombiano tiene mala calidad fotográfica","B. Que los medios construyen una Colombia ficticia que invisibiliza la realidad de los excluidos","C. Que Colombia está creciendo económicamente de manera sostenida","D. Que los periódicos deberían publicar más reportajes sociales"],
+      ok:1, exp:"La oposición entre la Colombia 'de las fotos' y la que 'vive entre las grietas' denuncia cómo el discurso mediático oficial produce una representación selectiva que excluye y silencia a los marginados. La imagen se convierte en instrumento ideológico." },
+    { frag:"El silencio de los testigos no era cobardía. Era un idioma. Un idioma que todos en ese barrio habían aprendido desde niños, cuando entendieron que hablar podía costar más que callar.",
+      obra:"Scorpio City",
+      pregunta:"¿Cómo se relaciona semánticamente 'el silencio como idioma' con el contexto sociocultural colombiano?",
+      opts:["A. Es una reflexión filosófica general sobre la comunicación no verbal","B. El silencio aprendido refleja cómo la violencia sistemática produce autocensura colectiva en comunidades vulnerables","C. Critica a las personas que no se expresan en público por timidez","D. Es una metáfora sobre la sordomudez como condición médica"],
+      ok:1, exp:"En el contexto colombiano, el silencio aprendido desde la infancia es una estrategia de supervivencia colectiva. Semánticamente, 'idioma' eleva el silencio a cultura: no es ausencia de comunicación sino una forma específica de comunicar miedo, memoria y resistencia bajo la amenaza." },
+    { frag:"La novela de Mendoza termina sin resolución. El asesino no es nombrado. La víctima no recibe justicia. El investigador abandona el caso. Y la ciudad sigue igual. Exactamente igual.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué función cumple el final abierto e irresoluto en el marco de la novela negra colombiana?",
+      opts:["A. Es una falla narrativa: el autor no supo cómo terminar la historia","B. El final irresoluto refleja la realidad de la impunidad colombiana, donde el crimen no se castiga y la vida continúa sin justicia","C. Es un recurso para que el lector imagine su propio final preferido","D. Indica que habrá una segunda parte de la novela"],
+      ok:1, exp:"En la novela negra latinoamericana, y especialmente en Mendoza, la irresolución es una declaración política: el género no puede ofrecer el cierre que la realidad colombiana niega. La justicia narrativa sería una mentira frente a la impunidad real." }
+  ],
+  escritura: [
+    { frag:"El detective Torres revisó la escena por tercera vez. Todo encajaba demasiado bien. En veinte años de carrera había aprendido que cuando todo encaja es porque alguien lo armó para que encajara.",
+      obra:"Perder es cuestión de método",
+      consigna:"Escribe un análisis literario de 3 párrafos: (1) identifica el recurso narrativo principal y su efecto en el lector, (2) analiza qué dice el fragmento sobre la relación entre verdad y apariencia, (3) conecta esta idea con la literatura noir colombiana. (Mínimo 6 oraciones en total)",
+      hint:"Pista: piensa en la diferencia entre 'lo que parece verdad' y 'la verdad construida'. ¿Qué tiene que ver eso con la historia de Colombia?" },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles. Y eso, pensó el viejo, era todo lo que necesitabas para escribir una novela.",
+      obra:"Bello animal",
+      consigna:"Analiza qué dice este fragmento sobre el concepto de héroe en la literatura de Mendoza. Contrástalo con el héroe clásico de la literatura. Luego escribe un párrafo propio definiendo qué es un héroe en el contexto de la Colombia contemporánea. (Mínimo 6 oraciones)",
+      hint:"Pista: ¿en qué se diferencia el héroe de Mendoza del héroe de una novela de aventuras? ¿Qué hace heroico a alguien ordinario?" },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"Analiza las tres dicotomías que propone el fragmento (sobrevivir/vivir, aguantar/resistir, diferencia/literatura) y escribe un ensayo breve argumentando cuál de estas tensiones consideras más relevante para entender la realidad colombiana. (Mínimo 7 oraciones)",
+      hint:"Pista: una dicotomía no es solo una diferencia de palabras. Es una diferencia de posición frente a la vida. ¿Cuál de estas tres cambia más las cosas?" },
+    { frag:"La ciudad tiene una memoria propia, independiente de los que la habitan. Recuerda los edificios que demolieron, los nombres que cambiaron, las personas que desaparecieron. Esa memoria no está en los libros. Está en las grietas del pavimento.",
+      obra:"La ciudad de los umbrales",
+      consigna:"Escribe un ensayo de análisis crítico sobre cómo la ciudad funciona como archivo de la memoria colectiva en la literatura de Mendoza. Usa el fragmento como punto de partida y conecta con el concepto de 'memoria urbana'. (Mínimo 7 oraciones)",
+      hint:"Pista: ¿qué significa que la memoria esté en las grietas y no en los libros? ¿Qué tipo de historia es esa? ¿Quién la lee?" }
+  ],
+  creativo: [
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"Reescribe este fragmento de dos maneras: (1) en tercera persona (él/ella) y (2) desde la voz de la ciudad misma (Bogotá habla). Luego escribe 2 oraciones explicando cómo el cambio de voz modifica el significado.",
+      hint:"Pista: cada voz narrativa implica una posición de poder diferente. ¿Quién sabe más: el que vive, el que observa, o la ciudad misma?" },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles. Y eso, pensó el viejo, era todo lo que necesitabas para escribir una novela.",
+      obra:"Bello animal",
+      consigna:"Escribe el primer párrafo de una novela (el incipit) sobre una persona ordinaria en una circunstancia imposible de tu propia ciudad. Presenta el mundo, el personaje y el conflicto en 5-6 oraciones. Luego explica en 2 oraciones qué elección literaria tomaste y por qué.",
+      hint:"Pista: los grandes incipit presentan un mundo completo en pocas líneas. ¿Cuál es el detalle que lo hace todo diferente?" },
+    { frag:"El río Bogotá avanzaba negro y silencioso entre las fábricas. Nadie se bañaba en él desde hacía décadas. Pero en las noches, algunos decían escuchar voces que venían del agua.",
+      obra:"Scorpio City",
+      consigna:"Escribe un poema de 10 versos desde la perspectiva del río Bogotá. El río habla en primera persona sobre lo que ha visto, lo que carga en sus aguas y lo que recuerda. Incluye al menos dos imágenes históricas y una imagen de esperanza.",
+      hint:"Pista: el río tiene memoria de siglos. Ha visto cosas que los humanos prefirieron olvidar. ¿Qué guarda el río que nadie más guarda?" },
+    { frag:"Escribir sobre Bogotá era imposible. La ciudad cambiaba mientras uno escribía. Para cuando terminabas la oración, el lugar ya no existía: lo habían demolido, renombrado, olvidado.",
+      obra:"La ciudad de los umbrales",
+      consigna:"Escribe un texto híbrido (mezcla entre poema y prosa) de 8-10 líneas donde describes un lugar de tu ciudad que existe en tu memoria pero que ya cambió o desapareció. El texto debe ser tanto recuerdo como denuncia.",
+      hint:"Pista: ¿qué sientes cuando vuelves a un lugar y ya no es el mismo? ¿Quién tiene la culpa del olvido? La escritura puede ser un acto de resistencia." }
+  ]
+}
+
+}; /* fin DATA */
+
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const LEVELS = [
+  {id:"basico",    name:"Básico",      badge:"EXPLORADOR", desc:"Comprende hechos, personajes y el mundo visible del texto.", color:"#2558a8", req:0,  acts:10},
+  {id:"intermedio",name:"Intermedio",  badge:"ANALISTA",   desc:"Infiere, interpreta símbolos y descifra capas de sentido.", color:"#5c3d7c", req:8,  acts:14},
+  {id:"avanzado",  name:"Avanzado",    badge:"CRÍTICO",    desc:"Analiza, cuestiona la voz narrativa y crea nuevos sentidos.", color:"#bf3728", req:18, acts:16}
+];
+
+const STANDS = [
+  {id:"lectura",       name:"DETECTIVE",      idx:"I",   desc:"🔍 Eres el detective: analiza el fragmento y encuentra la evidencia real entre las pistas falsas.",     color:"#2558a8", type:"mcq",      pts:15},
+  {id:"interpretacion",name:"DECODIFICADOR",  idx:"II",  desc:"🧩 Descifra el código oculto: ¿qué mensaje secreto esconden los símbolos y metáforas del texto?",   color:"#5c3d7c", type:"mcq",      pts:25},
+  {id:"escritura",     name:"CORRESPONSAL",   idx:"III", desc:"📒 Eres el corresponsal de campo: abre tu cuaderno y escribe el reporte desde adentro de la historia.", color:"#1a6854", type:"open",     pts:30},
+  {id:"creativo",      name:"AUTOR FANTASMA", idx:"IV",  desc:"👻 El universo Mendoza tiene páginas en blanco. Tú las escribes: poemas, monólogos, mundos nuevos.",color:"#b07d0e", type:"creative", pts:40}
+];
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS — reemplaza el servidor Java
+   Pega tu URL de Apps Script aquí:
+══════════════════════════════════════════════ */
+const SHEETS_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
+
+/* ══════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════ */
+const S = {
+  studentName: "Anónimo",
+  sessionId: Date.now().toString(36),
+  pts: 0,
+  done: {},
+  totalDone: 0,
+  corrects: 0,
+  opens: 0,
+  level: null,
+  stand: null,
+  actIdx: 0,
+  actStartTime: 0,
+  answered: false,
+  selected: null,
+  openText: "",
+  openDone: false,
+  serverOnline: false,
+  sessionStart: Date.now()
+};
+
+function doneKey(lv, st) { return lv + "_" + st; }
+function getDone(lv, st) { return S.done[doneKey(lv,st)] || 0; }
+function levelDone(lv)   { return STANDS.reduce((a,s) => a + getDone(lv,s.id), 0); }
+
+/* ══════════════════════════════════════════════
+   INICIO DE SESIÓN
+══════════════════════════════════════════════ */
+function startSession() {
+  const name = document.getElementById("nameInput").value.trim();
+  if (!name) { alert("Por favor escribe tu nombre."); return; }
+  S.studentName = name;
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.querySelectorAll('[id^="tb-student-"]').forEach(el => el.textContent = name);
+  checkServer();
+  goTo("levels");
+}
+
+/* ══════════════════════════════════════════════
+   PUNTOS Y BARRAS
+══════════════════════════════════════════════ */
+function addPts(n, label) {
+  S.pts += n;
+  updateBars();
+  showToast("+" + n + " · " + label);
+}
+function updateBars() {
+  const pct = Math.min((S.pts / 800) * 100, 100);
+  document.querySelectorAll('[id^="bar-"]').forEach(el => el.style.width = pct + "%");
+  document.querySelectorAll('[id^="pts-"]').forEach(el => el.textContent = S.pts);
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-txt").textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS — verificar y enviar
+══════════════════════════════════════════════ */
+async function checkServer() {
+  if (!SHEETS_URL || SHEETS_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
+    S.serverOnline = false;
+    updateServerUI(false);
+    return;
+  }
+  try {
+    const r = await fetch(SHEETS_URL + "?ping=1", {method:"GET", mode:"no-cors"});
+    S.serverOnline = true;
+    updateServerUI(true);
+  } catch { 
+    S.serverOnline = false;
+    updateServerUI(false); 
+  }
+}
+
+function updateServerUI(online) {
+  const el = document.getElementById("srv-lv");
+  const txt = document.getElementById("srv-lv-txt");
+  if (!el) return;
+  el.className = "server-status " + (online ? "ok" : "off");
+  txt.textContent = online ? "servidor activo" : "sin servidor";
+}
+
+async function sendToServer(payload) {
+  if (!SHEETS_URL || SHEETS_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") return false;
+  try {
+    await fetch(SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch { return false; }
+}
+
+/* ══════════════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════════════ */
+function goTo(sc) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + sc).classList.add("active");
+  window.scrollTo(0,0);
+  if (sc === "levels")  renderLevels();
+  if (sc === "stands")  renderStands();
+  if (sc === "summary") renderSummary();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER LEVELS
+══════════════════════════════════════════════ */
+function renderLevels() {
+  const grid = document.getElementById("lvGrid");
+  grid.innerHTML = "";
+  LEVELS.forEach((lv, i) => {
+    const unlocked = S.totalDone >= lv.req;
+    const cnt = levelDone(lv.id);
+    const pct = Math.min((cnt / lv.acts) * 100, 100);
+    const isDone = cnt >= lv.acts;
+    const card = document.createElement("div");
+    card.className = "lv-card au" + (unlocked ? (isDone ? " done" : "") : " locked");
+    card.style.animationDelay = (i * 0.1) + "s";
+    card.innerHTML = `
+      <div class="lv-stripe" style="background:${lv.color}"></div>
+      ${isDone ? `<div style="position:absolute;top:13px;right:14px;font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:3px 9px;border:1px solid ${lv.color};color:${lv.color};opacity:.75">✓ COMPLETO</div>` : ""}
+      <div class="lv-num">${i+1}</div>
+      <div class="lv-badge" style="background:${lv.color}15;color:${lv.color};border:1px solid ${lv.color}40">${lv.badge}</div>
+      <div class="lv-name">${lv.name.toUpperCase()}</div>
+      <div class="lv-desc">${lv.desc}</div>
+      <div class="lv-foot">
+        <span class="lv-count"><span style="color:${lv.color};font-weight:600">${cnt}</span> / ${lv.acts} actividades</span>
+        <span class="lv-arrow">${unlocked ? "→" : "🔒 " + lv.req + " pts necesarios"}</span>
+      </div>
+      ${unlocked ? `<div class="lv-progress" style="width:${pct}%;background:${lv.color}"></div>` : ""}
+    `;
+    if (unlocked) {
+      card.onclick = () => {
+        S.level = lv;
+        document.getElementById("st-lv-label").textContent = lv.name;
+        document.getElementById("st-eyebrow").textContent = lv.name + " · Módulos";
+        document.getElementById("st-title").textContent = "Elige tu stand";
+        document.getElementById("st-sub").textContent = lv.desc;
+        goTo("stands");
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   RENDER STANDS
+══════════════════════════════════════════════ */
+function renderStands() {
+  const grid = document.getElementById("stGrid");
+  grid.innerHTML = "";
+  STANDS.forEach((st, i) => {
+    const cnt = getDone(S.level.id, st.id);
+    const tl = st.type === "mcq" 
+      ? (st.id === "lectura" ? "🔍 Detective de Pistas" : "🧩 Decodificador de Símbolos") 
+      : st.type === "open" ? "📒 Cuaderno de Campo" : "👻 Autor Fantasma";
+    const tile = document.createElement("div");
+    tile.className = "st-tile au";
+    tile.style.animationDelay = (i * 0.08) + "s";
+    tile.innerHTML = `
+      <div class="st-rule" style="background:${st.color}"></div>
+      <div class="st-index" style="color:${st.color}10">${st.idx}</div>
+      <div class="st-type" style="color:${st.color}">${tl} · +${st.pts} pts</div>
+      <div class="st-name" style="color:${st.color}">${st.name}</div>
+      <div class="st-desc">${st.desc}</div>
+      <div class="st-foot">
+        <span><span style="color:${st.color};font-weight:600">${cnt}</span> actividad${cnt!==1?"es":""} realizada${cnt!==1?"s":""}</span>
+        <span style="color:${st.color}">→</span>
+      </div>
+    `;
+    tile.onmouseover = () => { tile.style.background = "var(--paper2)"; };
+    tile.onmouseout  = () => { tile.style.background = ""; };
+    tile.onclick = () => openStand(st);
+    grid.appendChild(tile);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ABRIR STAND
+══════════════════════════════════════════════ */
+function openStand(st) {
+  S.stand = st;
+  const pool = DATA[S.level.id][st.id];
+  S.actIdx = Math.floor(Math.random() * pool.length);
+  S.answered = false;
+  S.selected = null;
+  S.openText = "";
+  S.openDone = false;
+  S.actStartTime = Date.now();
+  document.getElementById("act-tb").textContent = st.name;
+  goTo("activity");
+  renderAct();
+}
+
+function nextAct() {
+  const pool = DATA[S.level.id][S.stand.id];
+  let newIdx = S.actIdx;
+  if (pool.length > 1) {
+    while (newIdx === S.actIdx) newIdx = Math.floor(Math.random() * pool.length);
+  }
+  S.actIdx = newIdx;
+  S.answered = false;
+  S.selected = null;
+  S.openText = "";
+  S.openDone = false;
+  S.actStartTime = Date.now();
+  renderAct();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER ACTIVIDAD — MECÁNICAS LÚDICAS
+══════════════════════════════════════════════ */
+
+/* Emojis para opciones según stand */
+const OPT_EMOJIS = {
+  lectura: ["🔦","📍","📋","🗺️"],
+  interpretacion: ["🔑","🧩","💀","🌀"]
+};
+
+function renderAct() {
+  const wrap = document.getElementById("actWrap");
+  const st = S.stand;
+  const lv = S.level;
+  const act = DATA[lv.id][st.id][S.actIdx];
+  const doneCount = getDone(lv.id, st.id) + 1;
+  const lvObj = LEVELS.find(l => l.id === lv.id);
+
+  /* ── Panel izquierdo (fragmento) — igual en todos los tipos ── */
+  const leftHtml = `
+    <div class="act-left">
+      <div class="act-dropcap">${st.name.slice(0,2)}</div>
+      <div class="act-tag" style="border-color:${st.color}50;color:${st.color}">${st.name} · ${lv.name}</div>
+      <div class="act-seq">Actividad ${doneCount} de ${lvObj.acts}</div>
+      <blockquote class="act-frag">
+        <span class="act-frag-bar" style="background:${st.color}"></span>
+        ${act.frag}
+      </blockquote>
+      <div class="act-attr">
+        <div class="act-author">${act.obra}</div>
+        <div class="act-work">Mario Mendoza · fragmento adaptado</div>
+      </div>
+    </div>`;
+
+  let rightHtml = "";
+
+  /* ══════════════════════════════
+     STAND LECTURA → "Detective de Pistas"
+  ══════════════════════════════ */
+  if (st.id === "lectura") {
+    const emojis = OPT_EMOJIS.lectura;
+    const optsHtml = act.opts.map((op, i) => {
+      let cls = "opt-game";
+      let result = "";
+      if (S.answered) {
+        if (i === act.ok) { cls += " correct"; result = "✓"; }
+        else if (i === S.selected) { cls += " wrong"; result = "✗"; }
+      }
+      return `<div class="${cls}" id="o${i}" onclick="pickOpt(${i})" style="--act-color:${st.color};cursor:${S.answered?"default":"pointer"}">
+        <span class="opt-game-emoji">${emojis[i]}</span>
+        <span class="opt-game-letter">${String.fromCharCode(65+i)}</span>
+        <span class="opt-game-text">${op.replace(/^[A-D]\.\s*/,"")}</span>
+        <span class="opt-game-result">${result}</span>
+      </div>`;
+    }).join("");
+
+    const fbHtml = S.answered ? `
+      <div class="fb ${S.selected===act.ok?"":"wrong"} show">
+        <div class="fb-label">${S.selected===act.ok?"🔍 Pista correcta — Caso avanzado":"🚫 Pista incorrecta"}</div>
+        <div class="fb-text">${act.exp}</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">🔍</span>Detective de Pistas
+        </div>
+        <div class="act-qtype" style="color:${st.color}">Misión: identifica la evidencia real</div>
+        <div class="act-question">${act.pregunta}</div>
+        <div class="opts">${optsHtml}</div>
+        ${fbHtml}
+        <div class="actions">
+          ${S.answered ? `<button class="btn-p" onclick="nextAct()">Siguiente pista →</button>` : ""}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND INTERPRETACIÓN → "Decodificador"
+  ══════════════════════════════ */
+  } else if (st.id === "interpretacion") {
+    const emojis = OPT_EMOJIS.interpretacion;
+    const optsHtml = act.opts.map((op, i) => {
+      let cls = "opt-game";
+      let result = "";
+      if (S.answered) {
+        if (i === act.ok) { cls += " correct"; result = "✓"; }
+        else if (i === S.selected) { cls += " wrong"; result = "✗"; }
+      }
+      return `<div class="${cls}" id="o${i}" onclick="pickOpt(${i})" style="--act-color:${st.color};cursor:${S.answered?"default":"pointer"}">
+        <span class="opt-game-emoji">${emojis[i]}</span>
+        <span class="opt-game-letter">${String.fromCharCode(65+i)}</span>
+        <span class="opt-game-text">${op.replace(/^[A-D]\.\s*/,"")}</span>
+        <span class="opt-game-result">${result}</span>
+      </div>`;
+    }).join("");
+
+    const fbHtml = S.answered ? `
+      <div class="fb ${S.selected===act.ok?"":"wrong"} show">
+        <div class="fb-label">${S.selected===act.ok?"🧩 Símbolo descifrado":"🔒 Código incorrecto — intenta de nuevo"}</div>
+        <div class="fb-text">${act.exp}</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">🧩</span>Decodificador de Símbolos
+        </div>
+        <div class="act-qtype" style="color:${st.color}">Descifra el mensaje oculto del fragmento</div>
+        <div class="act-question">${act.pregunta}</div>
+        <div class="opts">${optsHtml}</div>
+        ${fbHtml}
+        <div class="actions">
+          ${S.answered ? `<button class="btn-p" onclick="nextAct()">Siguiente símbolo →</button>` : ""}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND ESCRITURA → "Cuaderno de Campo"
+  ══════════════════════════════ */
+  } else if (st.id === "escritura") {
+    const wordCount = S.openText.trim().split(/\s+/).filter(Boolean).length;
+    const goalWords = 40;
+    const progress = Math.min(Math.round((wordCount/goalWords)*100), 100);
+    const hintHtml = act.hint ? `
+      <div class="xp-hint">
+        <span>💡</span>${act.hint.replace("Pista:","").trim()}
+      </div>` : "";
+
+    const missionHtml = `
+      <div class="mission-card" style="border-color:${st.color}">
+        <div class="mission-title" style="color:${st.color}">📋 Misión del corresponsal</div>
+        <div class="mission-body">${act.consigna}</div>
+      </div>`;
+
+    const fbHtml = S.openDone ? `
+      <div class="fb show" style="border-color:${st.color}">
+        <div class="fb-label" style="color:${st.color}">✓ Reporte archivado</div>
+        <div class="fb-text">Tu entrada quedó guardada en el cuaderno. Puedes continuar con otra escena.</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">📒</span>Cuaderno de Campo
+        </div>
+        ${missionHtml}
+        ${hintHtml}
+        ${!S.openDone
+          ? `<div class="writing-toolbar">
+               <span class="writing-goal">Meta: <span>${goalWords} palabras</span></span>
+               <span class="writing-goal">${wordCount} / ${goalWords} palabras · ${progress}%</span>
+             </div>
+             <textarea class="open-ta" id="ota" placeholder="Escribe tu reporte aquí…" style="border-top-color:${st.color}25"
+               oninput="S.openText=this.value;this.parentElement.querySelector('.writing-goal span').textContent='${goalWords} palabras';let wc=this.value.trim().split(/\\s+/).filter(Boolean).length;this.parentElement.querySelectorAll('.writing-goal')[1].innerHTML=wc+' / ${goalWords} palabras · '+Math.min(Math.round((wc/${goalWords})*100),100)+'%'"
+             >${S.openText}</textarea>
+             <div class="charcount" id="cc">${S.openText.length} caracteres</div>`
+          : `<div class="open-sent" style="border-color:${st.color}">${S.openText.replace(/\n/g,"<br>")}</div>`
+        }
+        ${fbHtml}
+        <div class="actions">
+          ${!S.openDone
+            ? `<button class="btn-p" onclick="sendOpen()" id="sbtn">Archivar reporte →</button>`
+            : `<button class="btn-p" onclick="nextAct()">Nueva escena →</button>`}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND CREATIVO → "Autor Fantasma"
+  ══════════════════════════════ */
+  } else {
+    const hintHtml = act.hint ? `
+      <div class="xp-hint">
+        <span>✨</span>${act.hint.replace("Pista:","").trim()}
+      </div>` : "";
+
+    const ghostHtml = `
+      <div class="author-ghost" style="border-color:${st.color}">
+        <div class="author-ghost-label" style="color:${st.color}">👻 Tu misión como Autor Fantasma</div>
+        <div class="author-ghost-text">${act.consigna}</div>
+      </div>`;
+
+    const fbHtml = S.openDone ? `
+      <div class="fb show" style="border-color:${st.color}">
+        <div class="fb-label" style="color:${st.color}">👻 Pieza creada — ¡El universo Mendoza te recibe!</div>
+        <div class="fb-text">Tu creación quedó guardada. El universo literario crece con tu voz.</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">👻</span>Autor Fantasma
+        </div>
+        ${ghostHtml}
+        ${hintHtml}
+        ${!S.openDone
+          ? `<textarea class="open-ta" id="ota" placeholder="Escribe tu creación aquí… (poema, monólogo, historia)" style="border-top-color:${st.color}25;min-height:170px"
+               oninput="S.openText=this.value;document.getElementById('cc').textContent=this.value.split(/\\s+/).filter(Boolean).length+' palabras'"
+             >${S.openText}</textarea>
+             <div class="charcount" id="cc">${S.openText.trim().split(/\s+/).filter(Boolean).length} palabras</div>`
+          : `<div class="open-sent" style="border-color:${st.color}">${S.openText.replace(/\n/g,"<br>")}</div>`
+        }
+        ${fbHtml}
+        <div class="actions">
+          ${!S.openDone
+            ? `<button class="btn-p" onclick="sendOpen()" id="sbtn">Publicar creación →</button>`
+            : `<button class="btn-p" onclick="nextAct()">Nueva inspiración →</button>`}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+  }
+
+  wrap.innerHTML = leftHtml + rightHtml;
+}
+
+/* ══════════════════════════════════════════════
+   RESPONDER MCQ
+══════════════════════════════════════════════ */
+function pickOpt(idx) {
+  if (S.answered) return;
+  S.answered = true;
+  S.selected = idx;
+  const st = S.stand;
+  const act = DATA[S.level.id][st.id][S.actIdx];
+  const ok = idx === act.ok;
+  const pts = ok ? st.pts : Math.floor(st.pts * 0.25);
+  if (ok) S.corrects++;
+  addPts(pts, st.name + (ok ? " correcto" : " intento"));
+  markDone();
+  const secs = Math.round((Date.now() - S.actStartTime) / 1000);
+  sendToServer({
+    estudiante: S.studentName,
+    nivel: S.level.id,
+    stand: st.id,
+    tipo: "mcq",
+    obra: act.obra,
+    respuesta: act.opts[idx],
+    correcta: String(ok),
+    puntos: String(pts),
+    textoAbierto: "",
+    tiempo: String(secs),
+    sesionId: S.sessionId
+  });
+  renderAct();
+  checkDone();
+}
+
+/* ══════════════════════════════════════════════
+   ENVIAR RESPUESTA ABIERTA
+══════════════════════════════════════════════ */
+function sendOpen() {
+  const ta = document.getElementById("ota");
+  const val = (ta ? ta.value : S.openText).trim();
+  if (val.length < 15) { alert("¡El reporte está incompleto! Escribe al menos unas oraciones para archivar tu misión."); return; }
+  S.openText = val;
+  S.openDone = true;
+  S.opens++;
+  const pts = S.stand.pts;
+  addPts(pts, S.stand.name + " completado");
+  markDone();
+  const secs = Math.round((Date.now() - S.actStartTime) / 1000);
+  const act = DATA[S.level.id][S.stand.id][S.actIdx];
+  sendToServer({
+    estudiante: S.studentName,
+    nivel: S.level.id,
+    stand: S.stand.id,
+    tipo: S.stand.type,
+    obra: act.obra,
+    respuesta: "Respuesta abierta",
+    correcta: "true",
+    puntos: String(pts),
+    textoAbierto: val,
+    tiempo: String(secs),
+    sesionId: S.sessionId
+  });
+  renderAct();
+  checkDone();
+}
+
+function markDone() {
+  const k = doneKey(S.level.id, S.stand.id);
+  S.done[k] = (S.done[k] || 0) + 1;
+  S.totalDone++;
+}
+
+function checkDone() {
+  const lvObj = LEVELS.find(l => l.id === S.level.id);
+  if (levelDone(S.level.id) >= lvObj.acts) {
+    setTimeout(() => goTo("summary"), 1300);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SUMMARY
+══════════════════════════════════════════════ */
+function renderSummary() {
+  const elapsed = Math.round((Date.now() - S.sessionStart) / 60000);
+  document.getElementById("sum-msg").textContent =
+    "Nivel " + (S.level?.name || "") + " completado — ¡Excelente, " + S.studentName + "!";
+  const items = [
+    {n:S.totalDone, l:"Actividades", c:"#2558a8"},
+    {n:S.corrects,  l:"Correctas",   c:"#1a6854"},
+    {n:S.pts,       l:"Puntos",      c:"#b07d0e"},
+    {n:elapsed+"m", l:"Tiempo",      c:"#bf3728"}
+  ];
+  document.getElementById("sumGrid").innerHTML = items.map(it =>
+    `<div class="sum-tile"><div class="sum-n" style="color:${it.c}">${it.n}</div><div class="sum-l">${it.l}</div></div>`
+  ).join("");
+  checkServer().then(() => {
+    const msg = document.getElementById("sum-server-msg");
+    msg.innerHTML = (SHEETS_URL && SHEETS_URL !== "TU_URL_DE_APPS_SCRIPT_AQUI")
+      ? `<div class="server-notif ok">✓ Resultados enviados a Google Sheets del docente</div>`
+      : `<div class="server-notif fail">⚠ Configura tu URL de Google Sheets para guardar resultados en la nube.</div>`;
+  });
+}
+
+/* INIT */
+renderLevels();
+</script>
+</body>
+</html>
